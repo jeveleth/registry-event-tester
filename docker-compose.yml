@@ -1,0 +1,16 @@
+version: "3.5"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    restart: always
+  registry:
+    image: registry:2
+    ports:
+      - "5000:5000"
+    volumes:
+      - "./config.yml:/etc/docker/registry/config.yml"
