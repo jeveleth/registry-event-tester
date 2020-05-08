@@ -57,7 +57,29 @@ func GetEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("event is %v\n", events)
+	for _, event := range events.Events {
+		log.Printf(`docker registry event ===>
+		ID: %v
+		Time: %v
+		Action: %v
+		Size: %v
+		Digest: %v
+		Length: %v
+		Repository: %v
+		URL: %v
+		Tag: %v`,
+			event.ID,
+			event.TimeStamp,
+			event.Action,
+			event.Target.Size,
+			event.Target.Digest,
+			event.Target.Length,
+			event.Target.Repository,
+			event.Target.URL,
+			event.Target.Tag,
+		)
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 
 	json.NewEncoder(w).Encode(events)
