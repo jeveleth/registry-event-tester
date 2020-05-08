@@ -17,3 +17,7 @@ image-push:
 	docker pull busybox
 	docker tag busybox:latest localhost:5000/myfirstimage:latest
 	docker push localhost:5000/myfirstimage:latest
+
+start:
+	-${MAKE} down
+	-${MAKE} up

@@ -11,7 +11,6 @@ import (
 )
 
 type Target struct {
-	MediaType  string `json:"mediaType"`
 	Size       int    `json:"size"`
 	Digest     string `json:"digest"`
 	Length     int    `json:"length"`
@@ -24,10 +23,10 @@ type Events struct {
 	Events []Event `json:"events"`
 }
 type Event struct {
-	ID        string   `json:"id"`
-	TimeStamp string   `json:"timestamp"`
-	Action    string   `json:"action"`
-	Target    []Target `json:"target"`
+	ID        string `json:"id"`
+	TimeStamp string `json:"timestamp"`
+	Action    string `json:"action"`
+	Target    Target `json:"target"`
 }
 
 func GetEvent(w http.ResponseWriter, r *http.Request) {
@@ -39,13 +38,14 @@ func GetEvent(w http.ResponseWriter, r *http.Request) {
 	events := Events{}
 
 	body, readErr := ioutil.ReadAll(r.Body)
+	log.Printf("body is %v \n", string(body))
 	if readErr != nil {
 		log.Printf("error reading request body: %v", readErr)
 		http.Error(w, http.StatusText(400), 400)
 	}
 
 	if err := json.Unmarshal(body, &events); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
