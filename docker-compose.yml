@@ -8,6 +8,8 @@ services:
     ports:
       - "8000:8000"
     restart: always
+    environment:
+      - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL}
   registry:
     image: registry:2
     ports:

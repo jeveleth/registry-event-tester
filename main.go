@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/go-playground/validator"
 	"github.com/hashicorp/go-retryablehttp"
@@ -92,10 +93,9 @@ func GetEvent(w http.ResponseWriter, r *http.Request) {
 }
 
 func notifySlack(message string) {
-	log.Printf("payload is %v\n", message)
-	payload := fmt.Sprintf(`'{"text":"%v"}'`, message)
+	body := ` { "text" : "New image pushed to registry` + message + `."}`
 
-	req, err := retryablehttp.NewRequest("POST", slackWebhookURL, payload)
+	req, err := retryablehttp.NewRequest("POST", slackWebhookURL, strings.NewReader(body))
 	checkErr(err)
 	req.Header.Add("content-type", "application/json")
 
@@ -103,7 +103,7 @@ func notifySlack(message string) {
 	checkErr(err)
 
 	defer res.Body.Close()
-	body, err := ioutil.ReadAll(res.Body)
+
 	checkErr(err)
 
 	if res.StatusCode != 200 {
