@@ -2,12 +2,15 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/go-playground/validator"
+	"github.com/hashicorp/go-retryablehttp"
 )
 
 type Target struct {
@@ -28,6 +31,8 @@ type Event struct {
 	Action    string `json:"action"`
 	Target    Target `json:"target"`
 }
+
+var slackWebhookURL = os.Getenv("SLACK_WEBHOOK_URL")
 
 func GetEvent(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
@@ -57,12 +62,64 @@ func GetEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("event is %v\n", events)
+	var fmtEvent string
+	for _, event := range events.Events {
+		fmtEvent = fmt.Sprintf(`
+		ID: %v
+		Time: %v
+		Action: %v
+		Size: %v
+		Digest: %v
+		Length: %v
+		Repository: %v
+		URL: %v
+		Tag: %v`,
+			event.ID,
+			event.TimeStamp,
+			event.Action,
+			event.Target.Size,
+			event.Target.Digest,
+			event.Target.Length,
+			event.Target.Repository,
+			event.Target.URL,
+			event.Target.Tag,
+		)
+	}
+
+	notifySlack(fmtEvent)
 	w.Header().Set("Content-Type", "application/json")
 
 	json.NewEncoder(w).Encode(events)
 }
 
+func notifySlack(message string) {
+	body := ` { "text" : "New image pushed to registry` + message + `."}`
+
+	req, err := retryablehttp.NewRequest("POST", slackWebhookURL, strings.NewReader(body))
+	checkErr(err)
+	req.Header.Add("content-type", "application/json")
+
+	res, err := retryablehttp.NewClient().Do(req)
+	checkErr(err)
+
+	defer res.Body.Close()
+
+	checkErr(err)
+
+	if res.StatusCode != 200 {
+		log.Printf("non 200 status Code from Slack: %v\n", res.StatusCode)
+		os.Exit(1)
+	}
+
+	log.Printf("response from slack is is %v", body)
+}
+
+func checkErr(err error) {
+	if err != nil {
+		log.Println(fmt.Sprintf("an error occurred:  %v", err.Error()))
+		os.Exit(1)
+	}
+}
 func main() {
 	port := os.Getenv("PORT")
 	if port == "" {
