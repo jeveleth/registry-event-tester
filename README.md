@@ -1,8 +1,19 @@
 
 You can test your docker registry notifications like so.
 
-`make start`
+Set an envvar `SLACK_WEBHOOK_URL` to an appropriate slack webhook.
 
+Run the following to push a local image to a local registry and see how the notification config performs.
+```
+make start
+make image-push
+make logs-all
+```
+
+If you want to see the UI, you can visit http://localhost, courtesy of the [docker-registry-ui repository](https://github.com/Joxit/docker-registry-ui).
+
+
+To test a sample notification in Slack, run the following:
 
 ```
 echo '{
