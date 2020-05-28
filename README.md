@@ -43,3 +43,6 @@ make start
 make image-push
 make logs-all
 ```
+
+If you want to see the UI, you can visit http://localhost, courtesy of the [docker-registry-ui repository](https://github.com/Joxit/docker-registry-ui).
+
